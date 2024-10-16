@@ -1,8 +1,9 @@
 #!/bin/bash
 
 BINARY_PATH="~/scripts/shour/shour"
-PROGRESS_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjoibnNoZXJpIiwiZXhwIjoxNzI4ODMxMzY4fQ.X0KmPJGaDfQ7mFoB_3I7k4RppxNcWTIcHFEwhThcyI8"
-PLATFORM_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwIjp7InVpZCI6IjgxOTQxZDVhLWEyNTUtNDRlNi04NjBlLTk3MmI2ZmM1OTQwYiIsInIiOiJzdHVkZW50In0sImV4cCI6MTcyODcxNjYzN30.lqkipshn2gstkUe4OuTxB77JqYgs0oop0_Mmg1599VQ"
+PROGRESS_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjoibnNoZXJpIiwiZXhwIjoxNzI5MjQzNDgwfQ.SLSLEt_KuLppJOvNVOT7hoP1nK7uUg1mtjpSBbNGFaY"
+PLATFORM_TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwIjp7InVpZCI6IjgxOTQxZDVhLWEyNTUtNDRlNi04NjBlLTk3MmI2ZmM1OTQwYiIsInIiOiJzdHVkZW50In0sImV4cCI6MTcyOTI0MzQ3Nn0.gS2kvIPSQakEnopBf26sLAh9PFJCaKzR0tCBhDwSU-A"
+HOURS_REQUIREMENT=20 # 20 OR 30
 
 hoursText="Hours fulfilled!"
 reviewsText="You have upcoming reviews."
@@ -17,22 +18,16 @@ gnome-terminal --geometry=36x11 -- bash -c "
     while true; do
         clear
         
-        $BINARY_PATH $PROGRESS_TOKEN $PLATFORM_TOKEN
-        
+        $BINARY_PATH $PROGRESS_TOKEN $PLATFORM_TOKEN $HOURS_REQUIREMENT
 
-        sleep 30  # 300 секунд = 5 минут
+        sleep 60  # 30 secs
     done
-" &
-
-sleep 1
-
-TERMINAL_ID=$(xdotool getactivewindow)
-xprop -id $TERMINAL_ID -f _NET_WM_STATE 32a -set _NET_WM_STATE "_NET_WM_STATE_ABOVE"
+"
 
 : << 'END_COMMENT'
         if $BINARY_PATH $PROGRESS_TOKEN $PLATFORM_TOKEN | grep -q \"No upcoming reviews\" && [ \"\$isReviewsWorked\" = false ]; then
             paplay \"$sound_bell\"
             notify-send \"Student Info (Sinfo)\" \"You have upcoming reviews.\"
-            isReviewsWorked=true  # Убедитесь, что здесь нет пробелов вокруг '='
+            isReviewsWorked=true
         fi
 END_COMMENT

@@ -11,7 +11,9 @@ import (
 )
 
 func main() {
-	var progressToken, platformToken string
+	var progressToken string
+	var platformToken string
+	maxHours := 20.0
 
 	green := "\033[32m"
 	red := "\033[31m"
@@ -25,8 +27,14 @@ func main() {
 		progressToken = os.Args[1]
 		platformToken = os.Args[2]
 	} else {
-		fmt.Println("Usage: shour [progress token] [platform token]")
+		fmt.Println("Usage: shour [progress token] [platform token] [REQUIRED HOURS]")
 		os.Exit(0)
+	}
+
+	if len(os.Args) == 4 {
+		if os.Args[3] == "30" {
+			maxHours = 30.0
+		}
 	}
 
 	// URL для API
@@ -54,7 +62,7 @@ func main() {
 		log.Fatalf("Error from platform API: %s", string(body))
 	}
 
-	// Извлечение данных из ответа платформы
+	// // Извлечение данных из ответа платформы
 	var jsonResponse struct {
 		Attrs struct {
 			ReviewPoints int `json:"review_points"`
@@ -71,6 +79,8 @@ func main() {
 	}
 
 	// Запрос к URL прогресса
+	client = &http.Client{}
+
 	reqProgress, err := http.NewRequest("GET", urlProgress, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -116,9 +126,8 @@ func main() {
 		log.Fatal("Hours field is not present or not a number")
 	}
 
-	isRequirementFulfilled := hours >= 20
+	isRequirementFulfilled := hours >= maxHours
 	hoursRounded := fmt.Sprintf("%.2f", hours)
-	maxHours := 20.0
 	filledBlocks := int(hours / maxHours * 10)
 
 	scale := ""
@@ -130,18 +139,20 @@ func main() {
 	}
 
 	// Вывод информации о студенте с форматированием
-	fmt.Println("\n==== Student Information ====")
-	fmt.Printf(" Name:         %s%s%s\n", brightYellow, userInfo["login"], reset)
-	fmt.Printf(" Lives:        %s\n", hearts)
-	fmt.Printf(" RP:           %d\n", jsonResponse.Attrs.ReviewPoints)
-	fmt.Printf(" Hours:        %s \n", hoursRounded)
-	fmt.Println("=============================")
-	fmt.Printf(" Scale:        [%s ] \n", scale)
+	fmt.Println("===== Student Info (by nsheri) =====")
+	fmt.Printf("   Name:         %s%s%s\n", brightYellow, userInfo["login"], reset)
+	fmt.Printf("   Lives:        %s\n", hearts)
+	fmt.Printf("   RP:           %d\n", jsonResponse.Attrs.ReviewPoints)
+	fmt.Printf("   Hours:        %s \n", hoursRounded)
+	fmt.Println("====================================")
+	fmt.Printf("   Scale:        [%s ] \n", scale)
 
 	if isRequirementFulfilled {
-		fmt.Println(green + " ✔ Hours fulfilled!" + reset)
+		fmt.Println(green + "   ✔ Hours fulfilled!" + reset)
+	} else if len(os.Args) == 4 && maxHours == 30.0 {
+		fmt.Printf(lightRed+"   ✖ Hours left: %.2f%s\n", 30-hours, reset)
 	} else {
-		fmt.Printf(lightRed+" ✖ Hours left: %.2f%s\n", 20-hours, reset)
+		fmt.Printf(lightRed+"   ✖ Hours left: %.2f%s\n", 20-hours, reset)
 	}
 	// Запрос к API слотов
 	reqSlots, err := http.NewRequest("GET", urlSlots, nil)
@@ -206,10 +217,10 @@ func main() {
 
 	// Вывод результата
 	if reviewsExist {
-		fmt.Println(blue + " ✔ You have upcoming reviews." + reset)
+		fmt.Println(blue + "   ✔ You have upcoming reviews." + reset)
 	} else {
-		fmt.Println(" ✖ No upcoming reviews.")
+		fmt.Println("   ✖ No upcoming reviews.")
 	}
 
-	fmt.Println("=============================")
+	fmt.Println("====================================")
 }
